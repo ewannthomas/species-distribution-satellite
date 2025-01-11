@@ -2,11 +2,11 @@
 
 
 unzipScenes = function(){
-  zippedFilesPath = getZippedFilesPath()
+  zippedFilesPath = getZippedFilesPath(externalSSD = externalDataSource)
   
   for (zipFiles in zippedFilesPath){
     if(length(zipFiles)>0){
-      extractFolder = getZipExportPath(zippedPath = zipFiles[1])
+      extractFolder = getZipExportPath(zippedPath = zipFiles[1], externalSSD = externalDataSource)
       
       for (zipFile in zipFiles){
         finalZipDir = getExportedZipPath(sourceDir = extractFolder, tailPath = zipFile)

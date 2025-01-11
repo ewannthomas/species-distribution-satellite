@@ -1,9 +1,12 @@
 library(readr)
 library(terra)
+library(xml2)
+library(tibble)
+library(dplyr)
+library(arrow)
+library(stringr)
 
 monthPathMaker = function(folderPrefix){
-  years = seq(2018, 2018, 1)
-  months = seq(1,12, 1)
   
   monthPaths = unlist(lapply(years, function(year){lapply(months, function(month){
     paste(folderPrefix, year, month, sep = "/")
@@ -13,19 +16,40 @@ monthPathMaker = function(folderPrefix){
 }
 
 
-getZippedFilesPath = function(){
-  zippedParent = "./data/sentinel_2"
+getZippedFilesPath = function(externalSSD=externalDataSource){
+  
+  if (externalSSD==FALSE){
+    zippedParent = "./data/sentinel_1"
+  }
+  else if(externalSSD==TRUE){
+    
+    zippedParent = list.files("/media/bippw1/Bhumi SSD", full.names = TRUE)[14]
+  }
+  
+  print(zippedParent)
+  
   monthPaths = monthPathMaker(folderPrefix = zippedParent)
   
   zipFiles = lapply(monthPaths, function(monthPath){list.files(monthPath, full.names=TRUE)})
   
+  
   return(zipFiles)
 }
 
-getZipExportPath = function(zippedPath){
+getZipExportPath = function(zippedPath, externalSSD){
+  
   extractedParent = "./data/extracted"
   
-  pathSplits = strsplit(zippedPath, "/")[[1]][c(4, 5, 6)]
+  if (externalSSD==FALSE){
+    
+    pathSplits = strsplit(zippedPath, "/")[[1]][c(4, 5, 6)]
+    
+  }
+  else if(externalSSD==TRUE){
+    
+    pathSplits = strsplit(zippedPath, "/")[[1]][c(6, 7, 8)]
+    
+  }
   
   pathSplits[3] =strsplit(pathSplits[3], "\\.z")[[1]][[1]]
   
@@ -38,6 +62,7 @@ getZipExportPath = function(zippedPath){
   
   return(extractedMonthlyFolder)
 }
+
 
 
 getExportedZipPath = function(sourceDir, tailPath){
@@ -60,9 +85,9 @@ getDayFolders = function(){
 }
 
 
-getBandPaths <- function(){
+getS2BandPaths <- function(){
   
-  # Return a list containing all three
+  # Return a list containing all s2 bands
   bandPaths = lapply(getDayFolders(), function(dayFolder){
     img_paths = list.files(path=dayFolder,full.names = TRUE, recursive = TRUE, pattern = "*B0.*.10m.jp2|*B0[5-8]_20m.jp2|*B11_20m.jp2|*B12_20m.jp2")
     
@@ -71,6 +96,16 @@ getBandPaths <- function(){
   return(bandPaths)
 }
 
+getS1BandPaths <- function(){
+  
+  # Return a list containing all s1 bands
+  bandPaths = lapply(getDayFolders(), function(dayFolder){
+    img_paths = list.files(path=dayFolder,full.names = TRUE, recursive = TRUE, pattern = "*-vh.*.tiff$|*-vv.*.tiff$")
+    
+  })
+  
+  return(bandPaths)
+}
 
 
 # Function to return month path for export band composites images
@@ -127,4 +162,44 @@ getMosaicPaths = function(compositePath){
   return(monthlyMosaicPath)}
 
 
+getS1TiffXml = function(tiffPath){
+  newPath = sub(pattern ="measurement", replacement= "annotation", x = tiffPath)
+  newPath = sub(pattern ="tiff", replacement= "xml", x = newPath)
+  
+  return(newPath)
+}
 
+
+
+getShpFilePath = function(shpFileStem){
+  stemWithExt = paste(shpFileStem, "shp", sep=".")
+  shpParent = "./data/shapes"
+  
+  shpPath = paste(shpParent, shpFileStem, stemWithExt, sep="/")
+  
+  return(shpPath)
+}
+
+sentinel1DFPath = function(imgPath){
+  sent1Parent = "./data/dfs/sentinel_1"
+  
+  pathSplits = strsplit(imgPath, "/")[[1]][c(4,5,6,8)]
+
+  sent1Folder = paste(c(sent1Parent, pathSplits[c(1,2,3)]), collapse = "/")
+  
+  sent1Folder = sub(pattern = ".SAFE", replacement = "", x=sent1Folder)
+  
+  sent1Stem = sub(pattern = ".tiff", replacement = ".parquet", x=pathSplits[4])
+  
+  sent1DFPath = paste(c(sent1Folder, sent1Stem), collapse = "/")
+  
+  # Create the df folder if it does not exist
+  if (!file.exists(sent1Folder)) {
+    dir.create(sent1Folder, recursive = TRUE)
+    cat("Folder created:", sent1Folder, "\n")
+  }
+
+  return(sent1DFPath)
+
+  
+}

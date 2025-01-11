@@ -1,37 +1,62 @@
-library(terra)
 
 
-s1p = "./data/s1.tif"
-s2p = "./data/s2.tif"
-s3p = "./data/s3.tif"
-s4p = "./data/s4.tif"
+externalDataSource = TRUE
 
 
-s1 = rast(s1p)
-s2 = rast(s2p)
-s3 = rast(s3p)
-s4 = rast(s4p)
+monthPathMaker = function(folderPrefix){
+  years = seq(2022, 2022, 1)
+  months = seq(1, 6, 1)
+  
+  monthPaths = unlist(lapply(years, function(year){lapply(months, function(month){
+    paste(folderPrefix, year, month, sep = "/")
+  })}))
+  
+  return (monthPaths)
+}
 
-hp_y_lat_min = 3361536.581
-hp_x_long_max = 555603.883
+getZippedFilesPath = function(externalSSD=externalDataSource){
+  
+  if (externalSSD==FALSE){
+    zippedParent = "./data/sentinel_1"
+  }
+  else if(externalSSD==TRUE){
+    
+    zippedParent = list.files("/media/bippw1/Lilith", full.names = TRUE)[5]
+  }
+  
+  monthPaths = monthPathMaker(folderPrefix = zippedParent)
 
-hp_x_long_min = 313386.107
-hp_y_lat_max = 3681425.141
+  zipFiles = lapply(monthPaths, function(monthPath){list.files(monthPath, full.names=TRUE)})
 
-# Define the new extent (xmin, xmax, ymin, ymax)
-new_extent <- ext(hp_x_long_min, hp_x_long_max, hp_y_lat_min, hp_y_lat_max)
+  return(zipFiles)
+}
 
-# Reassign the extent to each raster
-ext(s1) <- new_extent
-ext(s2) <- new_extent
-ext(s3) <- new_extent
-ext(s4) <- new_extent
-
-s4_re = reprojectRast(s4)
-
-merged = merge(sprc(s1, s2, s3, s4), first=FALSE)
-merged_new = merge(s3, s4, first=FALSE)
-
-writeRaster(merged, "./data/mos_test2.tif", overwrite=TRUE)
-writeRaster(merged_new, "./data/mos_test_merge_43.tif", overwrite=TRUE)
-
+getZipExportPath = function(zippedPath, externalSSD){
+  
+  extractedParent = "./data/extracted"
+  
+  if (externalSSD==FALSE){
+    
+    pathSplits = strsplit(zippedPath, "/")[[1]][c(4, 5, 6)]
+    
+  }
+  else if(externalSSD==TRUE){
+    
+    pathSplits = strsplit(zippedPath, "/")[[1]][c(6, 7, 8)]
+    
+  }
+  
+  pathSplits[3] =strsplit(pathSplits[3], "\\.z")[[1]][[1]]
+  
+  print(pathSplits)
+  
+  extractedMonthlyFolder <- paste(extractedParent, pathSplits[1], pathSplits[2], sep="/")
+  
+  # Create the composite folder if it does not exist
+  if (!file.exists(extractedMonthlyFolder)) {
+    dir.create(extractedMonthlyFolder, recursive = TRUE)
+  }
+  
+  return(extractedMonthlyFolder)
+}
+getZipExportPath("/media/bippw1/Lilith/sentinel_1/2022/6/S1A_IW_GRDH_1SDV_20220628T005912_20220628T005941_043856_053C4E_4DF3.SAFE.zip", externalSSD = externalDataSource)

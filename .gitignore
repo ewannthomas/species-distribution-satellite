@@ -2,3 +2,6 @@ data
 .R*
 *.Rproj
 docs
+.Rproj.user
+sent2
+sentinel_2.qgz
