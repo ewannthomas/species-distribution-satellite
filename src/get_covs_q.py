@@ -16,9 +16,7 @@ dir_path = Path.cwd()
 work_dir = dir_path.joinpath("bipp/ncount/sentinel-2-grab")
 data_dir = work_dir.joinpath("data/extracted")
 
-file_patterns = ["*B0[2-4]_10m.jp2", "*B08_10m.jp2", "*B11_20m.jp2", "*B12_20m.jp2"]
-
-raw_tifs = [y for x in file_patterns for y in list(data_dir.rglob(x))]
+raw_tifs = list(data_dir.rglob("*.tif"))
 
 
 final_folder = data_dir.parent.joinpath("qg")
@@ -28,41 +26,18 @@ shp_path = data_dir.parent.joinpath("shapes/himachal_species_final/himachal_spec
 # Function to clean and prepare output path
 def final_path_cleaner(raw_path):
     final_stem = ".".join([raw_path.stem, "csv"])
-    final_sub_path = "/".join(str(raw_path).split("/")[8:11]).replace(".SAFE", "")
-    final_sub_path = final_folder.joinpath(final_sub_path)
 
-    if not final_sub_path.exists():
-        final_sub_path.mkdir(parents=True)
+    if not final_folder.exists():
+        final_folder.mkdir(parents=True)
 
-    final_path = final_sub_path.joinpath(final_stem)
+    final_path = final_folder.joinpath(final_stem)
     return final_path
-
-
-# function to make dates out of final path names
-def datemaker(df_path):
-
-    date_stem = df_path.stem.split("_")[1].split("T")[0]
-
-    year_val = date_stem[0:4]
-    month_val = date_stem[4:6]
-    day_val = date_stem[6:8]
-
-    date_val = "-".join([year_val, month_val, day_val])
-
-    return date_val
-
-
-def band_maker(df_path):
-    band_val = df_path.stem.split("_")[2]
-
-    return band_val
 
 
 def output_logger(raw_path):
     final_stem = raw_path.stem
-    final_sub_path = "/".join(str(raw_path).split("/")[8:11]).replace(".SAFE", "")
 
-    out_dict = {"source_folder": final_sub_path, "source_file": final_stem}
+    out_dict = {"source_file": final_stem}
 
     print(out_dict)
 
@@ -83,10 +58,6 @@ for rast in raw_tifs:
 
     if not final_path.exists():
 
-        date_val = datemaker(final_path)
-
-        band_name = band_maker(final_path)
-
         # Load the raster layer
         raster_layer = QgsRasterLayer(str(rast), "Raster Layer")
         if not raster_layer.isValid():
@@ -99,7 +70,7 @@ for rast in raw_tifs:
 
         # Extract raster values and write to CSV
         with open(final_path, "w") as csv_file:
-            csv_file.write(f"date,long,lat,species_names,{band_name}\n")  # Header
+            csv_file.write(f"long,lat,species_names,{final_path.stem}\n")  # Header
 
             for feature in vector_layer.getFeatures():
                 # Get the geometry of the point
@@ -120,16 +91,20 @@ for rast in raw_tifs:
                     )
                     point_crs_updated = transform.transform(point)
 
-                # Get raster value at the point
-                raster_data_provider.setNoDataValue(1, 0)
-                value = raster_data_provider.sample(point_crs_updated, 1)
+                    # Get raster value at the point
+                    value = raster_data_provider.sample(point_crs_updated, 1)
+                else:
+                    # Get raster value at the point
+                    value = raster_data_provider.sample(point, 1)
+
+
 
                 if value[1] is not False:
                     # if value[0] != 0:
                     raster_value = value[0]
                     # Write to CSV
                     csv_file.write(
-                        f"{date_val},{point.x()},{point.y()},{attrs[6]},{raster_value}\n"
+                        f"{point.x()},{point.y()},{attrs[6]},{raster_value}\n"
                     )
 
     output_logger(rast)

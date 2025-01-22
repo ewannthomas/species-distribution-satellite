@@ -1,8 +1,9 @@
 
 
-externalDataSource = TRUE
-years = seq(2020, 2020, 1)
-months = seq(9, 12, 1)
+externalDataSource = FALSE
+years = seq(2024, 2024, 1)
+months = seq(3, 5, 1)
+# months = c(3, 5, 6, 7, 8, 9)
 
 #defining paths, libraries and utilities
 source("./src/allPaths.R")

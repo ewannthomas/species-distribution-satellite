@@ -23,7 +23,7 @@ getZippedFilesPath = function(externalSSD=externalDataSource){
   }
   else if(externalSSD==TRUE){
     
-    zippedParent = list.files("/media/bippw1/Bhumi SSD", full.names = TRUE)[14]
+    zippedParent = list.files("/media/bippw1/Life Saver", full.names = TRUE)[7]
   }
   
   print(zippedParent)

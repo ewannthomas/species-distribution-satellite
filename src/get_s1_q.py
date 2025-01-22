@@ -16,7 +16,7 @@ work_dir = dir_path.joinpath("bipp/ncount/sentinel-2-grab")
 data_dir = work_dir.joinpath("data/extracted")
 raw_tifs = list(data_dir.rglob("*.tiff"))
 final_folder = data_dir.parent.joinpath("qg")
-shp_path = data_dir.parent.joinpath("shapes/himachal_species/himachal_species.shp")
+shp_path = data_dir.parent.joinpath("shapes/himachal_species_final/himachal_species_final.shp")
 
 # Function to clean and prepare output path
 def final_path_cleaner(raw_path):
