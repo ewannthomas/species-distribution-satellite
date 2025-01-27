@@ -24,6 +24,8 @@ cm <- confusionMatrix(factor(test_pred$predicted_labels),
                       factor(test_pred$actual_labels),
                       mode = "everything")
 
+print(paste0("Target:",target_specie))
+print(paste0("Control:", control_specie))
 print(round(cm[["overall"]], digits=4))
 
 

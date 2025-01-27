@@ -7,9 +7,9 @@ col_names <- c('lat', 'long', 'actual', 'predicted', 'data_type')
 
 # Prepare the train visualization data
 train_viz_data <- train_data %>%
-  select(lat, long, speciesID) %>%
+  select(lat, long, species) %>%
   mutate(
-    actual = train_data$speciesID,  # Assuming 'speciesID' is the 'actual' column
+    actual = train_data$species,  # Assuming 'species' is the 'actual' column
     predicted = as.numeric(classifier_RF[["predicted"]]) - 1,
     data_type = "train",
     new = paste(actual, predicted, data_type, sep = "_")  # Concatenate 'actual', 'predicted', 'data_type' as a single string
@@ -17,9 +17,9 @@ train_viz_data <- train_data %>%
 
 # Prepare the test visualization data
 test_viz_data <- test_data %>%
-  select(lat, long, speciesID) %>%
+  select(lat, long, species) %>%
   mutate(
-    actual = test_data$speciesID,  # Assuming 'speciesID' is the 'actual' column
+    actual = test_data$species,  # Assuming 'species' is the 'actual' column
     predicted = test_pred$predicted_labels,  # Assuming 'predicted_labels' is a column in the test prediction object
     data_type = "test",
     new = paste(actual, predicted, data_type, sep = "_")  # Concatenate 'actual', 'predicted', 'data_type' as a single string
