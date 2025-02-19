@@ -77,6 +77,10 @@ for (i in 1:nlyr(cov_brick)) {
   print(cov_brick[[i]])  
 }
 
+
+#reassigning names to var_names of the brick as well
+varnames(cov_brick) <- names(cov_brick)
+
 writeRaster(cov_brick, "./data/covar_brick.tif")
 
 

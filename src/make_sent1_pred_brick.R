@@ -1,21 +1,28 @@
 library(terra)
 
 #defining precition tif
-tiff_path_root = paste0("./data/prediction_tiff/sentinel/s1")
+tiff_path_root = paste0("./data/prediction_tiff/sentinel_tiffs/s1")
 tiffs <- list.files(tiff_path_root, pattern = "*/*/*.tif", full.names = TRUE, recursive = TRUE)
 
 final_tiff_path = "./data/sent1_pred.tif"
 
 #####TIFF Prediction
-pred_brick_new = rast(tiffs)
+pred_brick = rast(tiffs)
 
 name_mapping <- c(
   "vh_Ascendingsummer", "vh_Descendingsummer", "vv_Ascendingsummer", "vv_Descendingsummer",
-  "vh_Ascendingwinter", "vh_Descendingwinter", "vv_Ascendingwinter", "vv_Descendingwinter",
-)
+  "vh_Ascendingwinter", "vh_Descendingwinter", "vv_Ascendingwinter", "vv_Descendingwinter")
+
 
 names(pred_brick) <-name_mapping
 
+
+# masking histograms for sentinel 1 bands for value evaluation
+# hist_vals = terra::hist(pred_brick, layer=2, plot=FALSE)
+# hist_vals$xname
+# hist_vals$breaks
+# hist_vals$counts
+# round(hist_vals$density, 3)
 
 # Making Sent 1 Indices
 # For Summer 
@@ -68,6 +75,27 @@ pred_brick$NRDVI_Dwinter <- pred_brick$RDVI_Dwinter / (pred_brick$VH_VV_Dwinter 
 pred_brick$SSDVI_Awinter <- pred_brick$vh_Ascendingwinter^2 - pred_brick$vv_Ascendingwinter^2
 pred_brick$SSDVI_Dwinter <- pred_brick$vh_Descendingwinter^2 - pred_brick$vv_Descendingwinter^2
 
+
+
+#removing Inf values arriving from division by 0 over bands
+for (i in 1:40){
+  print("*********************************")
+  print(i)
+  print(pred_brick[[i]])
+}
+
+# From the above its evident that layers 11, 19, 27, 28, 35, 36 have -Inf and their min values cannot be estimated.
+# So we will replace these -Inf values with NanN
+for (i in c(11, 19, 27, 28, 35, 36)){
+  pred_brick[[i]] = ifel(is.infinite(pred_brick[[i]]), NaN, pred_brick[[i]])
+}
+
+#checking whether the assignmebt worked
+for (i in c(11, 19, 27, 28, 35, 36)){
+  print("*********************************")
+  print(i)
+  print(pred_brick[[i]])
+}
 
 
 # Normalizing across each layer of the brick 

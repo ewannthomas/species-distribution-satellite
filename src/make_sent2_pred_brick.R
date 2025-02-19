@@ -1,13 +1,13 @@
 library(terra)
 
 #defining precition tif
-tiff_path_root = paste0("./data/prediction_tiff/sentinel/s2")
+tiff_path_root = paste0("./data/prediction_tiff/sentinel_tiffs/s2")
 tiffs <- list.files(tiff_path_root, pattern = "*/*/*.tif", full.names = TRUE, recursive = TRUE)
 
 final_tiff_path = "./data/sent2_pred.tif"
 
 #####TIFF Prediction
-pred_brick_new = rast(tiffs)
+pred_brick = rast(tiffs)
 
 name_mapping <- c(
   "B11summer", "B12summer", "B02summer", "B03summer", "B04summer", "B08summer",
@@ -20,8 +20,8 @@ names(pred_brick) <-name_mapping
 ##Making Sentinel 2 Indices
 
 # NDVI calculation for summer and winter using pred_brick
-pred_brick$NDVIsummer <- (pred_brick$B04summer - pred_brick$B03summer) / (pred_brick$B04summer + pred_brick$B03summer)
-pred_brick$NDVIwinter <- (pred_brick$B04winter - pred_brick$B03winter) / (pred_brick$B04winter + pred_brick$B03winter)
+pred_brick$NDVIsummer <- (pred_brick$B08summer - pred_brick$B04summer) / (pred_brick$B08summer + pred_brick$B04summer)
+pred_brick$NDVIwinter <- (pred_brick$B08winter - pred_brick$B04winter) / (pred_brick$B08winter + pred_brick$B04winter)
 
 # Create a single temporary dataframe without suffix
 temp_df <- c(pred_brick$NDVIsummer, pred_brick$NDVIwinter)
@@ -143,10 +143,28 @@ pred_brick$WDRVIsummer <- (0.1 * (pred_brick$B08summer - pred_brick$B04summer)) 
 pred_brick$WDRVIwinter <- (0.1 * (pred_brick$B08winter - pred_brick$B04winter)) / (0.1 * (pred_brick$B08winter + pred_brick$B04winter))
 
 
+#removing Inf values arriving from division by 0 over bands
+for (i in 1:46){
+  print("*********************************")
+  print(i)
+  print(pred_brick[[i]])
+}
 
+# From the above its evident that layers 19, 20 have Inf and their max values cannot be estimated.
+# So we will replace these Inf values with NanN
+for (i in c(19, 20)){
+  pred_brick[[i]] = ifel(is.infinite(pred_brick[[i]]), NaN, pred_brick[[i]])
+}
+
+#checking whether the assignment worked
+for (i in c(19, 20)){
+  print("*********************************")
+  print(i)
+  print(pred_brick[[i]])
+}
 
 # Normalizing across each layer of the brick 
-for (i in 1:nlyr(pred_brick)) {
+for (i in 30:nlyr(pred_brick)) {
   print("*********************************************")
   print(pred_brick[[i]])
   layer <- pred_brick[[i]]   

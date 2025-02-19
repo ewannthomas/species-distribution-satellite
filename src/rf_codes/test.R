@@ -98,3 +98,43 @@ for (i in 1:46){
   print(sent2_layers[[i]])
 }
 pred_brick
+
+
+
+
+# Create a SpatRaster
+r <- rast(nrows=3, ncols=3)
+values(r) <- c(1, Inf, 3, -Inf, 5, 6, 7, 8, Inf)
+
+# Apply is.infinite
+is_inf <- is.infinite(r)
+
+# Output: SpatRaster with TRUE where values are Inf or -Inf
+print(is_inf)
+
+
+
+
+
+
+
+
+# Create a sample multi-layer SpatRaster
+r1 <- rast(nrows=3, ncols=3, vals=c(1, 2, NaN, 4, 5, 6, NaN, 8, 9))
+r2 <- rast(nrows=3, ncols=3, vals=c(10, NaN, 30, 40, 50, 60, 70, NaN, 90))
+r3 <- rast(nrows=3, ncols=3, vals=c(100, 200, 300, NaN, 500, 600, 700, 800, 900))
+
+# Combine into a SpatRaster stack
+stack <- c(r1, r2, r3)
+names(stack) <- c("Layer1", "Layer2", "Layer3")
+
+# Identify pixels with any NaN or NA across layers
+na_mask <- app(stack, function(x) any(is.na(x)))
+
+# Remove pixels with any NaN or NA (set them to NA across all layers)
+clean_stack <- mask(stack, na_mask, maskvalue=TRUE)
+
+# View results
+print(stack)        # Original stack
+print(clean_stack)  # Cleaned stack
+
