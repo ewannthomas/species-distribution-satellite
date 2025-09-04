@@ -1,5 +1,5 @@
 # SPECIES DISTRIBUTION MODELLING
-The species distribution modelling is an ongoing collaborative research between Indian School of Business and Government of Himachal Pradesh. It attempts to make spatial predictions of 14 tree species using point based presence only data. The model framework is unsupervised classification. We incorporate random forest and XG-Boost models, along with robustness checks stemming from Generalized Linear Models (GLM).
+The species distribution modelling is an ongoing collaborative research between Indian School of Business and Government of Himachal Pradesh. It attempts to make multi-label spatial predictions of 14 tree species in Himachal Pradesh using point-based presence only data. The model framework is unsupervised classification. We incorporate random forest and XG-Boost models, along with robustness checks stemming from Generalized Linear Models (GLM).
 
 ### DATA
 - Sentinel 1  
