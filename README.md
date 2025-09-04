@@ -11,3 +11,5 @@ The species distribution modelling is an ongoing collaborative research between 
     The Harmonized Sentinel-2 Multispectral Instrument, Level-2A is a global product which provides a set of 12 scaled surface reflectance bands. The bands B2, B3, B4, B8 were incorporated in the feature generation process. The tiles were extracted at 10 meters resolution. The tiles were filtered for less than 10% cloud coverage.  
 
 SAR and Sentinel 2 tiles pertaining to 2018 to 2024 were extracted from Copernicus browser and monthly medians were computed and supplied in the spatial random forest model.  
+
+The raster data processes were conducted in stages using Python packages, QGIS programming, ArcGIS Pro and R programming. 
